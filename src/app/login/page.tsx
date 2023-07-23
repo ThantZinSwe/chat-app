@@ -30,7 +30,6 @@ export default function Login() {
     const { authUser, error } = await login(data);
 
     if (authUser) {
-      localStorage.setItem("token", authUser.accessToken);
       router.push("/");
     }
 

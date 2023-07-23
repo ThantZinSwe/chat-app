@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     router.push("/");
   }, [router, user]);
 
-  return <>{children}</>;
+  return <>{user ? children : null}</>;
 };
 
 export default ProtectedRoute;

@@ -31,7 +31,6 @@ export default function Register() {
     const { authUser, error } = await signup(data);
 
     if (authUser) {
-      localStorage.setItem("token", authUser.accessToken);
       router.push("/");
     }
 
