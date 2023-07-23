@@ -1,3 +1,4 @@
+import { AuthContextProvider } from "../../context/AuthContext";
 import "./globals.css";
 import type { Metadata } from "next";
 
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-raleway">{children}</body>
+      <body className="font-raleway">
+        <AuthContextProvider>{children}</AuthContextProvider>
+      </body>
     </html>
   );
 }
