@@ -2,17 +2,19 @@ import React, { useState } from "react";
 import {
   DocumentData,
   collection,
+  doc,
+  getDoc,
   getDocs,
   query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
+import { UserDetails } from "../types/user";
 
-export default function SearchProfile({
-  authUserName,
-}: {
-  authUserName: string;
-}) {
+export default function SearchProfile({ authUser }: { authUser: UserDetails }) {
   const [name, setName] = useState<string>("");
   const [users, setUsers] = useState<DocumentData[]>([]);
   const [error, setError] = useState(false);
@@ -22,7 +24,7 @@ export default function SearchProfile({
 
     const data = query(
       collection(db, "users"),
-      where("displayName", "!=", authUserName)
+      where("displayName", "!=", authUser?.displayName)
     );
 
     try {
@@ -42,6 +44,37 @@ export default function SearchProfile({
     } catch (error) {
       setError(true);
     }
+  };
+
+  const handleChat = async (user: any) => {
+    const combinedID =
+      authUser.uid > user.uid
+        ? authUser.uid + user.uid
+        : user.uid + authUser.uid;
+
+    try {
+      const result = await getDoc(doc(db, "chats", combinedID));
+
+      if (!result.exists()) {
+        await setDoc(doc(db, "chats", combinedID), { message: [] });
+
+        await updateDoc(doc(db, "userChats", authUser.uid), {
+          [combinedID + ".date"]: serverTimestamp(),
+          [combinedID + ".userInfo"]: {
+            uid: user.uid,
+            displayName: user.displayName,
+          },
+        });
+
+        await updateDoc(doc(db, "userChats", user.uid), {
+          [combinedID + ".date"]: serverTimestamp(),
+          [combinedID + ".userInfo"]: {
+            uid: authUser.uid,
+            displayName: authUser.displayName,
+          },
+        });
+      }
+    } catch (error) {}
   };
   return (
     <div>
@@ -86,6 +119,8 @@ export default function SearchProfile({
         {users.length > 0 &&
           users.map((user) => (
             <button
+              type="button"
+              onClick={() => handleChat(user)}
               className="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2"
               key={user?.uid}
             >
