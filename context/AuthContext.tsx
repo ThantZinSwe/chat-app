@@ -7,8 +7,9 @@ import {
   updateProfile,
 } from "firebase/auth";
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "../config/firebase";
+import { auth, db } from "../config/firebase";
 import { Login, SignUp, UserDetails } from "../types/user";
+import { doc, setDoc } from "firebase/firestore";
 
 const AuthContext = createContext({});
 
@@ -20,6 +21,8 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [user, setUser] = useState<UserDetails | null>(null);
+  const [authStateChecked, setAuthStateChecked] = useState(false);
+
   useEffect(() => {
     const unsubcribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -31,6 +34,7 @@ export const AuthContextProvider = ({
       } else {
         setUser(null);
       }
+      setAuthStateChecked(true);
     });
 
     return () => unsubcribe();
@@ -47,6 +51,14 @@ export const AuthContextProvider = ({
       await updateProfile(result.user, {
         displayName: userData.displayName,
       });
+
+      await setDoc(doc(db, "users", result.user.uid), {
+        uid: result.user.uid,
+        displayName: result.user.displayName,
+        email: result.user.email,
+      });
+
+      await setDoc(doc(db, "userChats", result.user.uid), {});
 
       return { authUser: result.user, error: null };
     } catch (error: any) {
@@ -74,8 +86,12 @@ export const AuthContextProvider = ({
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout }}>
-      {children}
-    </AuthContext.Provider>
+    <>
+      {authStateChecked && (
+        <AuthContext.Provider value={{ user, login, signup, logout }}>
+          {children}
+        </AuthContext.Provider>
+      )}
+    </>
   );
 };

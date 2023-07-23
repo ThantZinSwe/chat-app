@@ -1,20 +1,21 @@
 "use client";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem("token") || null;
+  const { user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!token) {
+    if (!user) {
       router.push("/login");
 
       return;
     }
 
     router.push("/");
-  }, [router, token]);
+  }, [router, user]);
 
   return <>{children}</>;
 };

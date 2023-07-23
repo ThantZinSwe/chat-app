@@ -8,13 +8,12 @@ import { useRouter } from "next/navigation";
 
 export default function Login() {
   const router = useRouter();
-  const { login }: AuthContextType = useAuth();
+  const { user, login }: AuthContextType = useAuth();
   const [data, setData] = useState<Login>({
     email: "",
     password: "",
   });
   const [error, setError] = useState(null);
-  const token = localStorage.getItem("token") || null;
 
   const handleChangeData = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -41,14 +40,14 @@ export default function Login() {
   };
 
   useEffect(() => {
-    if (token) {
+    if (user) {
       router.push("/");
     }
   });
 
   return (
     <>
-      {!token && (
+      {!user ? (
         <div className="flex min-h-full flex-col justify-center px-6 py-24 lg:px-8">
           <div className="sm:mx-auto sm:w-full sm:max-w-sm">
             <div className="flex items-center space-x-3">
@@ -145,7 +144,7 @@ export default function Login() {
             </p>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

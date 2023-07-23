@@ -8,14 +8,13 @@ import { useRouter } from "next/navigation";
 
 export default function Register() {
   const router = useRouter();
-  const { signup }: AuthContextType = useAuth();
+  const { user, signup }: AuthContextType = useAuth();
   const [error, setError] = useState(null);
   const [data, setData] = useState<SignUp>({
     displayName: "",
     email: "",
     password: "",
   });
-  const token = localStorage.getItem("token") || null;
 
   const handleChangeData = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -42,14 +41,14 @@ export default function Register() {
   };
 
   useEffect(() => {
-    if (token) {
+    if (user) {
       router.push("/");
     }
   });
 
   return (
     <>
-      {!token && (
+      {!user ? (
         <div className="flex min-h-full flex-col justify-center px-6 py-24 lg:px-8">
           <div className="sm:mx-auto sm:w-full sm:max-w-sm">
             <div className="flex items-center space-x-3">
@@ -153,7 +152,7 @@ export default function Register() {
             </p>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }
