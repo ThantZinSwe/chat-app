@@ -77,8 +77,8 @@ export default function SearchProfile({ authUser }: { authUser: UserDetails }) {
     } catch (error) {}
   };
   return (
-    <div>
-      <div className="flex flex-row items-center justify-between text-xs mt-6">
+    <>
+      <div className="flex flex-row items-center justify-between text-xs mt-10">
         <span className="font-bold">Find a user.</span>
       </div>
       <div className="mt-3">
@@ -121,7 +121,7 @@ export default function SearchProfile({ authUser }: { authUser: UserDetails }) {
             <button
               type="button"
               onClick={() => handleChat(user)}
-              className="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2"
+              className="flex flex-row items-center hover:bg-gray-100 rounded-xl p-2 mt-2"
               key={user?.uid}
             >
               <img
@@ -135,6 +135,6 @@ export default function SearchProfile({ authUser }: { authUser: UserDetails }) {
             </button>
           ))}
       </div>
-    </div>
+    </>
   );
 }
