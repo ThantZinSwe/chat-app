@@ -1,4 +1,5 @@
 import { AuthContextProvider } from "../../context/AuthContext";
+import { ChatContextProvider } from "../../context/ChatContext";
 import "./globals.css";
 import type { Metadata } from "next";
 export const metadata: Metadata = {
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="font-raleway">
-        <AuthContextProvider>{children}</AuthContextProvider>
+        <AuthContextProvider>
+          <ChatContextProvider>{children}</ChatContextProvider>
+        </AuthContextProvider>
       </body>
     </html>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   DocumentData,
   collection,
@@ -13,11 +13,13 @@ import {
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { UserDetails } from "../types/user";
+import { ChatContext } from "../context/ChatContext";
 
 export default function SearchProfile({ authUser }: { authUser: UserDetails }) {
   const [name, setName] = useState<string>("");
   const [users, setUsers] = useState<DocumentData[]>([]);
   const [error, setError] = useState(false);
+  const { dispatch } = useContext(ChatContext);
 
   const searchUser = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -46,7 +48,7 @@ export default function SearchProfile({ authUser }: { authUser: UserDetails }) {
     }
   };
 
-  const handleChat = async (user: any) => {
+  const handleChat = async (user: DocumentData) => {
     const combinedID =
       authUser.uid > user.uid
         ? authUser.uid + user.uid
@@ -74,6 +76,8 @@ export default function SearchProfile({ authUser }: { authUser: UserDetails }) {
           },
         });
       }
+
+      dispatch({ type: "CHANGE_USER", payload: user });
     } catch (error) {}
   };
   return (
