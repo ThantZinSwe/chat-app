@@ -58,11 +58,11 @@ export default function Chat() {
     return () => {
       unsubcribe();
     };
-  }, [data.chatID]);
+  }, [data.chatID, data.user.uid]);
 
   return (
     <>
-      {data.chatID != "null" && (
+      {data.chatID != "null" && messages && messages.length > 0 && (
         <div className="flex flex-col w-full h-full p-6">
           <div className="rounded p-3 flex flex-row-reverse">
             <div className="flex flex-row items-center space-x-2">

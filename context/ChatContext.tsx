@@ -28,7 +28,7 @@ export const ChatContextProvider = ({
               : action.payload.uid + authUser.uid,
         };
       default:
-        return state;
+        return null;
     }
   };
 
