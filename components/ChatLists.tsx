@@ -27,7 +27,7 @@ export default function ChatLists({ authUser }: { authUser: UserDetails }) {
       <div className="flex flex-row items-center justify-between text-xs">
         <span className="font-bold">Active Conversations</span>
         <span className="flex items-center justify-center text-xs text-white bg-primary-500 h-4 w-4 rounded-full leading-none">
-          {Object.entries(chatLists)?.length}
+          {chatLists && Object.entries(chatLists)?.length}
         </span>
       </div>
 
@@ -35,29 +35,36 @@ export default function ChatLists({ authUser }: { authUser: UserDetails }) {
         <div className="h-48 overflow-auto">
           {chatLists && (
             <>
-              {Object.entries(chatLists)?.map((chatList) => (
-                <button
-                  type="button"
-                  className="flex flex-row items-center justify-between hover:bg-gray-100 rounded-xl p-2 mt-2 w-full"
-                  key={chatList[0]}
-                  onClick={() => handleSelected(chatList[1]?.userInfo)}
-                >
-                  <div className="flex flex-row items-center space-x-2">
-                    <img
-                      src={`https://ui-avatars.com/api/?name=${chatList[1]?.userInfo?.displayName}`}
-                      alt={chatList[1]?.userInfo?.displayName}
-                      className="flex items-center justify-center bg-primary-200 rounded-full h-8 w-8"
-                    />
-                    <div className="ml-2 text-sm font-semibold">
-                      {chatList[1]?.userInfo?.displayName}
+              {Object.entries(chatLists)
+                ?.sort((a, b) => b[1].date - a[1].date)
+                .map((chatList) => (
+                  <button
+                    type="button"
+                    className="flex flex-row items-center justify-between hover:bg-gray-100 rounded-xl p-2 mt-2 w-full"
+                    key={chatList[0]}
+                    onClick={() => handleSelected(chatList[1]?.userInfo)}
+                  >
+                    <div className="flex flex-row items-center space-x-2">
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${chatList[1]?.userInfo?.displayName}`}
+                        alt={chatList[1]?.userInfo?.displayName}
+                        className="flex items-center justify-center bg-primary-200 rounded-full h-8 w-8"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold">
+                          {chatList[1]?.userInfo?.displayName}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {chatList[1]?.lastMessage?.text}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center justify-center ml-auto text-xs text-white bg-red-500 h-4 w-4 rounded-full leading-none">
+                    {/* <div className="flex items-center justify-center ml-auto text-xs text-white bg-red-500 h-4 w-4 rounded-full leading-none">
                     2
-                  </div>
-                </button>
-              ))}
+                  </div> */}
+                  </button>
+                ))}
             </>
           )}
         </div>

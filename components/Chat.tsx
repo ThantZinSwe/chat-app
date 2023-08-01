@@ -2,16 +2,57 @@
 import React, { useContext, useEffect, useState } from "react";
 import Message from "./Message";
 import { ChatContext } from "../context/ChatContext";
-import { doc, onSnapshot } from "firebase/firestore";
+import {
+  Timestamp,
+  arrayUnion,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../config/firebase";
+import { useAuth } from "../context/AuthContext";
+import { v4 as uuid } from "uuid";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
+  const [text, setText] = useState("");
+  const { user: authUser } = useAuth();
   const { data } = useContext(ChatContext);
+
+  const send = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    await updateDoc(doc(db, "chats", data.chatID), {
+      messages: arrayUnion({
+        id: uuid(),
+        text: text,
+        senderID: authUser.uid,
+        date: Timestamp.now(),
+      }),
+    });
+
+    updateLastMessage(authUser.uid);
+    updateLastMessage(data.user.uid);
+    setText("");
+  };
+
+  const updateLastMessage = async (uid: string) => {
+    await updateDoc(doc(db, "userChats", uid), {
+      [data.chatID + ".lastMessage"]: {
+        text,
+      },
+      [data.chatID + ".date"]: serverTimestamp(),
+    });
+  };
 
   useEffect(() => {
     const unsubcribe = onSnapshot(doc(db, "chats", data.chatID), (doc) => {
-      doc.exists() && setMessages(doc.data().messages || []);
+      const idsMatch =
+        doc.id === data.user.uid + authUser.uid ||
+        doc.id === authUser.uid + data.user.uid;
+
+      setMessages(doc.exists() && idsMatch ? doc.data().messages : []);
     });
 
     return () => {
@@ -35,12 +76,14 @@ export default function Chat() {
           </div>
           <div className="flex flex-col flex-auto flex-shrink-0 rounded-2xl bg-gray-100 h-full p-4">
             <div className="flex flex-col w-full h-full overflow-x-auto mb-4">
-              {messages.map((message) => (
-                <Message />
-              ))}
+              {messages &&
+                messages.map((message, index) => (
+                  <Message message={message} key={index} />
+                ))}
             </div>
             <div className="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
-              <div>
+              {/* copy clip */}
+              {/* <div>
                 <button className="flex items-center justify-center text-gray-400 hover:text-gray-600">
                   <svg
                     className="w-5 h-5"
@@ -57,52 +100,65 @@ export default function Chat() {
                     ></path>
                   </svg>
                 </button>
-              </div>
-              <div className="flex-grow ml-4">
-                <div className="relative w-full">
-                  <input
-                    type="text"
-                    className="flex w-full border rounded-xl focus:outline-none focus:border-primary-300 pl-4 h-10"
-                  />
-                  <button className="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600">
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      ></path>
-                    </svg>
+              </div> */}
+              <form
+                action=""
+                className="flex items-center w-full"
+                onSubmit={send}
+              >
+                <div className="flex-grow ml-4">
+                  <div className="relative w-full">
+                    <input
+                      type="text"
+                      value={text}
+                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                        setText(event.target.value)
+                      }
+                      className="flex w-full border rounded-xl focus:outline-none focus:border-primary-300 pl-4 h-10"
+                    />
+                    <button className="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600">
+                      <svg
+                        className="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+                <div className="ml-4">
+                  <button
+                    type="submit"
+                    className="flex items-center justify-center bg-primary-500 hover:bg-primary-600 rounded-xl text-white px-4 py-1 flex-shrink-0"
+                  >
+                    <span>Send</span>
+                    <span className="ml-2">
+                      <svg
+                        className="w-4 h-4 transform rotate-45 -mt-px"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                        ></path>
+                      </svg>
+                    </span>
                   </button>
                 </div>
-              </div>
-              <div className="ml-4">
-                <button className="flex items-center justify-center bg-primary-500 hover:bg-primary-600 rounded-xl text-white px-4 py-1 flex-shrink-0">
-                  <span>Send</span>
-                  <span className="ml-2">
-                    <svg
-                      className="w-4 h-4 transform rotate-45 -mt-px"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                      ></path>
-                    </svg>
-                  </span>
-                </button>
-              </div>
+              </form>
             </div>
           </div>
         </div>
